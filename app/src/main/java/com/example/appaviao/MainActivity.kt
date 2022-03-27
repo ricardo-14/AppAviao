@@ -1,22 +1,20 @@
 package com.example.appaviao
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.appaviao.ui.theme.AppAviaoTheme
 
 class MainActivity : ComponentActivity() {
@@ -30,7 +28,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
 
                 ) {
-                    Login()
+                    MyApp()
                 }
             }
         }
@@ -38,9 +36,17 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun Login() {
-    val nameState =  remember { mutableStateOf("") }
-    val passState =  remember { mutableStateOf("") }
+private fun Login(user: String, onSuccess: () -> Unit, onUserChange: (String) -> Unit) {
+    /*val nameState = remember { mutableStateOf("") }
+    val passState = remember { mutableStateOf("") }*/
+    var userState by remember {
+        mutableStateOf("")
+    }
+    var passwordState by remember {
+        mutableStateOf("")
+    }
+
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -67,19 +73,27 @@ private fun Login() {
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = nameState.value,
-                onValueChange = { textoRecebido -> nameState.value = textoRecebido },
+                value = user,
+                onValueChange = { onUserChange(it) },
                 label = { Text(text = "usuário") })
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = passState.value,
-                onValueChange = { textoRecebido -> passState.value = textoRecebido },
+                value = passwordState,
+                onValueChange = { passwordState = it },
                 label = { Text(text = "Senha") })
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = { /*TODO*/ }, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = {
+                if (user.equals("Ricardo") && passwordState.equals("1234")) {
+                    onSuccess()
+                    Toast.makeText(context, "Login ok", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Login inválido", Toast.LENGTH_LONG).show()
+                }
+            }, modifier = Modifier.fillMaxWidth()) {
                 Text(text = "Login")
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -94,36 +108,46 @@ private fun Login() {
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun PreviewPessoa() {
-    AppAviaoTheme {
-        Login()
+fun Welcome(user: String) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Olá ${user}",
+            style = MaterialTheme.typography.h4
+        )
+    }
+}
+
+@Composable
+fun MyApp() {
+    var isLogged by remember {
+        mutableStateOf(false)
+    }
+    var userState by remember {
+        mutableStateOf("")
+    }
+
+    if (isLogged) {
+        Welcome(user = userState)
+    } else {
+        Login(userState, onUserChange = {
+            userState = it
+        },
+            onSuccess = {
+                isLogged = true
+            })
     }
 }
 
 
+@Preview(showBackground = true)
+@Composable
+fun PreviewPessoa() {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    AppAviaoTheme {
+    MyApp()
+    }
+}
